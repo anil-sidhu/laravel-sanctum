@@ -4,7 +4,6 @@ Laravel Sanctum provides a featherweight authentication system for SPAs (single 
 
 ### You have to just follow a few steps to get following web services
 ##### Login API
-##### Register API
 ##### Details API
 
 
@@ -98,188 +97,61 @@ php artisan db:seed --class=UsersTableSeeder
 ````
 
 
-## Step 3: Passport Configuration  app/User.php
+## Step 10:  create a controller nad  /login route in the routes/api.php file:
+
 
 ```javascript 
-
 <?php
-namespace App;
-use Laravel\Passport\HasApiTokens;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-class User extends Authenticatable
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\User;
+use Illuminate\Support\Facades\Hash;
+class UserController extends Controller
 {
-  use HasApiTokens, Notifiable;
-/**
-* The attributes that are mass assignable.
-*
-* @var array
-*/
-protected $fillable = [
-'name', 'email', 'password',
-];
-/**
-* The attributes that should be hidden for arrays.
-*
-* @var array
-*/
-protected $hidden = [
-'password', 'remember_token',
-];
+    // 
+
+    function index(Request $request)
+    {
+        $user= User::where('email', $request->email)->first();
+        // print_r($data);
+            if (!$user || !Hash::check($request->password, $user->password)) {
+                return response([
+                    'message' => ['These credentials do not match our records.']
+                ], 404);
+            }
+        
+             $token = $user->createToken('my-app-token')->plainTextToken;
+        
+            $response = [
+                'user' => $user,
+                'token' => $token
+            ];
+        
+             return response($response, 201);
+    }
 }
 
-````
-
-
-## app/Providers/AuthServiceProvider.php
-
-
-
-```javascript 
-
-<?php
-namespace App\Providers;
-use Laravel\Passport\Passport; 
-use Illuminate\Support\Facades\Gate; 
-use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-class AuthServiceProvider extends ServiceProvider 
-{ 
-    /** 
-     * The policy mappings for the application. 
-     * 
-     * @var array 
-     */ 
-    protected $policies = [ 
-        'App\Model' => 'App\Policies\ModelPolicy', 
-    ];
-/** 
-     * Register any authentication / authorization services. 
-     * 
-     * @return void 
-     */ 
-    public function boot() 
-    { 
-        $this->registerPolicies(); 
-        Passport::routes(); 
-    } 
-}
-
-````
-
-## Step 4 :config/auth.php
-
-```javascript 
-
-<?php
-return [
-'guards' => [ 
-        'web' => [ 
-            'driver' => 'session', 
-            'provider' => 'users', 
-        ], 
-        'api' => [ 
-            'driver' => 'passport', 
-            'provider' => 'users', 
-        ], 
-    ],
-
-````
-## Step 5: Create API Route
-
-```javascript 
-
-<?php
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
-Route::post('login', 'API\UserController@login');
-Route::post('register', 'API\UserController@register');
-Route::group(['middleware' => 'auth:api'], function(){
-Route::post('details', 'API\UserController@details');
-});
 
 ````
 
 
-## Step 6: Create the Controller
+## Step 11: Test with postman, Result will be below
 
 ```javascript 
 
-<?php
-namespace App\Http\Controllers\API;
-use Illuminate\Http\Request; 
-use App\Http\Controllers\Controller; 
-use App\User; 
-use Illuminate\Support\Facades\Auth; 
-use Validator;
-class UserController extends Controller 
 {
-public $successStatus = 200;
-/** 
-     * login api 
-     * 
-     * @return \Illuminate\Http\Response 
-     */ 
-    public function login(){ 
-        if(Auth::attempt(['email' => request('email'), 'password' => request('password')])){ 
-            $user = Auth::user(); 
-            $success['token'] =  $user->createToken('MyApp')-> accessToken; 
-            return response()->json(['success' => $success], $this-> successStatus); 
-        } 
-        else{ 
-            return response()->json(['error'=>'Unauthorised'], 401); 
-        } 
-    }
-/** 
-     * Register api 
-     * 
-     * @return \Illuminate\Http\Response 
-     */ 
-    public function register(Request $request) 
-    { 
-        $validator = Validator::make($request->all(), [ 
-            'name' => 'required', 
-            'email' => 'required|email', 
-            'password' => 'required', 
-            'c_password' => 'required|same:password', 
-        ]);
-if ($validator->fails()) { 
-            return response()->json(['error'=>$validator->errors()], 401);            
-        }
-$input = $request->all(); 
-        $input['password'] = bcrypt($input['password']); 
-        $user = User::create($input); 
-        $success['token'] =  $user->createToken('MyApp')-> accessToken; 
-        $success['name'] =  $user->name;
-return response()->json(['success'=>$success], $this-> successStatus); 
-    }
-/** 
-     * details api 
-     * 
-     * @return \Illuminate\Http\Response 
-     */ 
-    public function details() 
-    { 
-        $user = Auth::user(); 
-        return response()->json(['success' => $user], $this-> successStatus); 
-    } 
+    "user": {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@doe.com",
+        "email_verified_at": null,
+        "created_at": null,
+        "updated_at": null
+    },
+    "token": "AbQzDgXa..."
 }
-
-
-````
-## Step 7: Run 
-
-```javascript 
-
-php artisan serve
-
 
 
 ````
