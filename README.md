@@ -153,5 +153,14 @@ class UserController extends Controller
     "token": "AbQzDgXa..."
 }
 
+````
+
+## Step 11: Make Details API or any other with secure route  
+
+```javascript 
+
+Route::middleware('auth:sanctum')->get('/user', function () {
+   //controller path 
+});
 
 ````
