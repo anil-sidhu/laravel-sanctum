@@ -1,8 +1,6 @@
-# Laravel passport 
-What is Passport?
-APIs typically use tokens to authenticate users and do not maintain session state between requests. 
-Laravel makes API authentication a breeze using Laravel Passport, which provides a full OAuth2 server implementation 
-for your Laravel application development in a matter of minutes.
+# Laravel Sanctum 
+What is Laravel Sanctum ?
+Laravel Sanctum provides a featherweight authentication system for SPAs (single page applications), mobile applications, and simple, token based APIs. Sanctum allows each user of your application to generate multiple API tokens for their account. These tokens may be granted abilities / scopes which specify which actions the tokens are allowed to perform..
 
 ### You have to just follow a few steps to get following web services
 ##### Login API
@@ -13,29 +11,90 @@ for your Laravel application development in a matter of minutes.
 
 
 ## Getting Started
-### Step 1: Install Package
+### Step 1: setup database in .env file
 
-```` composer require laravel/passport ````
+```` 
+DB_DATABASE=youtube
+DB_USERNAME=root
+DB_PASSWORD= redhat@123
+````
 
-## open config/app.php file and add service provider.
+## Step 2:Install Laravel Sanctum.
 
-```javascript 
+````
+composer require laravel/sanctum
+````
 
-config/app.php
-'providers' =>[
-Laravel\Passport\PassportServiceProvider::class,
+## Step 3:Publish the Sanctum configuration and migration files .
+
+````
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+
+````
+
+## Step 4:Run your database migrations.
+
+````
+php artisan migrate
+
+````
+
+## Step 5:Add the Sanctum's middleware.
+
+````
+../app/Http/Kernel.php
+
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
+
+...
+
+    protected $middlewareGroups = [
+        ...
+
+        'api' => [
+            EnsureFrontendRequestsAreStateful::class,
+            'throttle:60,1',
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ],
+    ];
+
+    ...
 ],
 
 ````
 
-## Step 2: Run Migration and Install
+## Step 6:To use tokens for users.
+
+````
+use Laravel\Sanctum\HasApiTokens;
+
+class User extends Authenticatable
+{
+    use HasApiTokens, Notifiable;
+}
+
+````
+
+## Step 7:Let's create the seeder for the User model
 
 ```javascript 
+php artisan make:seeder UsersTableSeeder
+````
 
-php artisan migrate
-php artisan passport:install
+## Step 8:Now let's insert as record
 
+```javascript 
+DB::table('users')->insert([
+    'name' => 'John Doe',
+    'email' => 'john@doe.com',
+    'password' => Hash::make('password')
+]);
+````
 
+## Step 9:To seed users table with user
+
+```javascript 
+php artisan db:seed --class=UsersTableSeeder
 ````
 
 
