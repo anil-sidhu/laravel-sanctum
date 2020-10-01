@@ -83,6 +83,10 @@ php artisan make:seeder UsersTableSeeder
 ## Step 8:Now let's insert as record
 
 ```javascript 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+...
+...
 DB::table('users')->insert([
     'name' => 'John Doe',
     'email' => 'john@doe.com',
@@ -159,8 +163,12 @@ class UserController extends Controller
 
 ```javascript 
 
-Route::middleware('auth:sanctum')->get('/user', function () {
-   //controller path 
-});
+Route::group(['middleware' => 'auth:sanctum'], function(){
+    //All secure URL's
+
+    });
+
+
+Route::post("login",[UserController::class,'index']);
 
 ````
