@@ -101,7 +101,7 @@ php artisan db:seed --class=UsersTableSeeder
 ````
 
 
-## Step 10:  create a controller nad  /login route in the routes/api.php file:
+## Step 10:  create a controller and  /login route in the routes/api.php file:
 
 
 ```javascript 
